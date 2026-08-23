@@ -1,4 +1,5 @@
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
+import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 const bool = (name: string) => integer(name, { mode: "boolean" });
 const int = (name: string) => integer(name, { mode: "number" });
@@ -59,16 +60,28 @@ export const cars = sqliteTable("cars", {
   updatedAt: text("updated_at").notNull(),
 });
 
-export const carImages = sqliteTable("car_images", {
-  id: text("id").primaryKey(),
-  carId: text("car_id")
-    .notNull()
-    .references(() => cars.id, { onDelete: "cascade" }),
-  path: text("path").notNull(),
-  sortOrder: int("sort_order").notNull(),
-  mimeType: text("mime_type"),
-  originalName: text("original_name"),
-});
+export const carImages = sqliteTable(
+  "car_images",
+  {
+    id: text("id").primaryKey(),
+    carId: text("car_id")
+      .notNull()
+      .references(() => cars.id, { onDelete: "cascade" }),
+    path: text("path").notNull(),
+    sortOrder: int("sort_order").notNull(),
+    mimeType: text("mime_type"),
+    originalName: text("original_name"),
+  },
+  (t) => [index("car_images_car_id_idx").on(t.carId)],
+);
+
+export const carsRelations = relations(cars, ({ many }) => ({
+  images: many(carImages),
+}));
+
+export const carImagesRelations = relations(carImages, ({ one }) => ({
+  car: one(cars, { fields: [carImages.carId], references: [cars.id] }),
+}));
 
 export type CarRow = typeof cars.$inferSelect;
 export type NewCarRow = typeof cars.$inferInsert;

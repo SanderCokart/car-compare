@@ -40,7 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# sqlite (keep data/uploads/.gitkeep)
+# sqlite + uploaded files (keep data/uploads/.gitkeep)
 /data/*.db
 /data/*.db-wal
 /data/*.db-shm
+/data/uploads/**
+!/data/uploads/.gitkeep

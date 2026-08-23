@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a Next.js 16 car comparison helper. SQLite lives at `data/carcompare.db`; listing photos are stored under `data/uploads` and served from `/uploads/...`.
 
-## Getting Started
-
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
+npm run seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `npm run seed` inserts six occasion listings (downloads dealer photos when allowed; otherwise a placeholder SVG) and applies Drizzle migrations.
+- `npm run dev` starts the app at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Migrations also apply when the app first opens the database (`next dev`, `next start`, or `npm run db:migrate`). After schema edits, generate SQL with `npm run db:generate`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The public roster API is unauthenticated.
 
-## Learn More
+Priority-spec choices (header dialog) persist in `localStorage` as `carcompare.prioritySpecKeys`.
 
-To learn more about Next.js, take a look at the following resources:
+Roster brand, fuel, and transmission filters are select boxes. Their options are the distinct values present on cars in the database (the full roster, not the current filtered subset), so a newly added brand or fuel shows up on the next page load.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## REST API
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Create a car (nullable listing fields default to `null` if omitted):
 
-## Deploy on Vercel
+```bash
+curl -sS -X POST http://localhost:3000/api/cars \
+  -H "Content-Type: application/json" \
+  -d '{"brand":"Volkswagen","model":"Polo","priceCents":1095000}'
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+List with filters and sort (`sort`: `price` | `odometer` | `year` | `horsepower` | `consumption`):
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+curl -sS "http://localhost:3000/api/cars?brand=Volkswagen&fuel=petrol&minPriceCents=1000000&maxOdometerKm=150000&appleCarPlay=true&sort=price&sortDir=asc"
+```
+
+Fetch, patch, and delete:
+
+```bash
+curl -sS http://localhost:3000/api/cars/<id>
+curl -sS -X PATCH http://localhost:3000/api/cars/<id> \
+  -H "Content-Type: application/json" \
+  -d '{"year":2018,"odometerKm":84936}'
+curl -sS -X DELETE http://localhost:3000/api/cars/<id>
+```
+
+Images (`files` field, jpeg/png/webp, max 8 MiB each):
+
+```bash
+curl -sS -X POST http://localhost:3000/api/cars/<id>/images \
+  -F "files=@./photo.jpg;type=image/jpeg"
+curl -sS -X DELETE http://localhost:3000/api/cars/<id>/images/<imageId>
+```
+
+A saved image path like `uploads/<carId>/<file>.jpg` is available at `http://localhost:3000/uploads/<carId>/<file>.jpg`.
+
+## Deploy (Dokploy)
+
+Use either the **Dockerfile** in this repo or Nixpacks. The app listens on `PORT=3000` and `HOSTNAME=0.0.0.0`.
+
+Mount a persistent volume at `/app/data` (SQLite + uploads). No extra services are required.
+
+Local parity:
+
+```bash
+docker compose up --build
+```
+
+Do not bake `data/carcompare.db` or listing photos into the image; they belong on the volume. After first boot, run `npm run seed` once in an environment that can write that volume (or copy a seeded `data/` tree onto it).
