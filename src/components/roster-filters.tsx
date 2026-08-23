@@ -2,11 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import {
-  FUEL_TYPES,
   SORT_KEYS,
-  TRANSMISSIONS,
   type CarsQuery,
   type FuelType,
+  type RosterFacets,
   type SortKey,
   type Transmission,
 } from "@/lib/car-schema";
@@ -14,7 +13,6 @@ import { ROSTER_FEATURE_CHIPS, carsHref } from "@/lib/cars-query";
 import { formatFuelType, formatTransmission } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -46,11 +44,24 @@ function centsToEuros(cents: number): number {
   return Math.round(cents / 100);
 }
 
+function withCurrent<T>(options: T[], current: T | undefined): T[] {
+  if (current == null || options.includes(current)) return options;
+  return [...options, current];
+}
+
+function withCurrentBrand(options: string[], current: string | undefined): string[] {
+  if (!current) return options;
+  if (options.some((brand) => brand.toLowerCase() === current.toLowerCase())) return options;
+  return [...options, current];
+}
+
 export function RosterFilters({
   query,
+  facets,
   idPrefix = "filter",
 }: {
   query: CarsQuery;
+  facets: RosterFacets;
   idPrefix?: string;
 }) {
   const router = useRouter();
@@ -65,24 +76,38 @@ export function RosterFilters({
     query.maxPriceCents != null ? centsToEuros(query.maxPriceCents) : PRICE_MAX_EUR;
   const minKm = query.minOdometerKm ?? KM_MIN;
   const maxKm = query.maxOdometerKm ?? KM_MAX;
+  const brands = withCurrentBrand(facets.brands, query.brand);
+  const fuels = withCurrent(facets.fuels, query.fuel);
+  const transmissions = withCurrent(facets.transmissions, query.transmission);
+  const brandValue =
+    query.brand == null
+      ? "all"
+      : (brands.find((brand) => brand.toLowerCase() === query.brand.toLowerCase()) ??
+        query.brand);
 
   return (
     <div className="grid gap-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="grid gap-1.5">
           <Label htmlFor={`${idPrefix}-brand`}>Brand</Label>
-          <Input
-            id={`${idPrefix}-brand`}
-            defaultValue={query.brand ?? ""}
-            placeholder="Any brand"
-            onBlur={(event) => {
-              const brand = event.target.value.trim();
-              push({ ...query, brand: brand || undefined });
-            }}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") event.currentTarget.blur();
-            }}
-          />
+          <Select
+            value={brandValue}
+            onValueChange={(value) =>
+              push({ ...query, brand: value === "all" ? undefined : value })
+            }
+          >
+            <SelectTrigger id={`${idPrefix}-brand`} className="w-full">
+              <SelectValue placeholder="Any brand" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Any brand</SelectItem>
+              {brands.map((brand) => (
+                <SelectItem key={brand} value={brand}>
+                  {brand}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="grid gap-1.5">
           <Label htmlFor={`${idPrefix}-fuel`}>Fuel</Label>
@@ -100,7 +125,7 @@ export function RosterFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Any fuel</SelectItem>
-              {FUEL_TYPES.map((fuel) => (
+              {fuels.map((fuel) => (
                 <SelectItem key={fuel} value={fuel}>
                   {formatFuelType(fuel)}
                 </SelectItem>
@@ -124,7 +149,7 @@ export function RosterFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Any transmission</SelectItem>
-              {TRANSMISSIONS.map((item) => (
+              {transmissions.map((item) => (
                 <SelectItem key={item} value={item}>
                   {formatTransmission(item)}
                 </SelectItem>

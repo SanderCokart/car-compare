@@ -17,6 +17,8 @@ The public roster API is unauthenticated.
 
 Priority-spec choices (header dialog) persist in `localStorage` as `carcompare.prioritySpecKeys`.
 
+Roster brand, fuel, and transmission filters are select boxes. Their options are the distinct values present on cars in the database (the full roster, not the current filtered subset), so a newly added brand or fuel shows up on the next page load.
+
 ## REST API
 
 Create a car (nullable listing fields default to `null` if omitted):

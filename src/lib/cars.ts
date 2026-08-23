@@ -9,7 +9,9 @@ import {
   type CarRecord,
   type CarsQuery,
   type CarUpdate,
+  type RosterFacets,
 } from "@/lib/car-schema";
+import { facetsFromCars } from "@/lib/cars-query";
 import { getDb } from "@/lib/db";
 import { carImages, cars, type CarImageRow, type CarRow } from "@/lib/db/schema";
 import { deleteCarUploadDir, unlinkUploadIfExists } from "@/lib/uploads";
@@ -145,6 +147,19 @@ export async function listCars(query: CarsQuery): Promise<CarRecord[]> {
   }
 
   return rows.map((row) => toCarRecord(row, imagesByCar.get(row.id) ?? []));
+}
+
+/** Distinct brand / fuel / transmission values from every car, ignoring active filters. */
+export async function listCarFacets(): Promise<RosterFacets> {
+  const db = getDb();
+  const rows = await db
+    .select({
+      brand: cars.brand,
+      fuelType: cars.fuelType,
+      transmission: cars.transmission,
+    })
+    .from(cars);
+  return facetsFromCars(rows);
 }
 
 export async function createCar(input: CarCreate): Promise<CarRecord> {
