@@ -33,7 +33,21 @@ const unset = {
 export const seedListings: SeedListing[] = [
   {
     id: "korteland-polo-7306087",
-    imageUrls: [],
+    // Korteland's own host returns 403 to automated clients. These 11 photos
+    // are the same listing (HVR-40-Z, Korteland Auto's) syndicated on AutoTrack.
+    imageUrls: [
+      "https://cdn.autotrack.nl/57759357/0-b0b3b7da0acd29c114cf7a478755b51e.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-a918910e373f1126861f3c1f875a9041.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-bed431cfe8a70758af86e66cd53e19dc.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-c556eb9079f9ef96a5cb448858163ca4.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-bec7ca789270b9e989f48053fa0ec10d.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-943e5885c5c2c2fc19ed7205f9a3e221.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-edf0c79ddd63fb075d37a4c52fe04fad.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-32fd0be63e00e0ad13ac3afab1935944.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-a6d62256a0770702fc8b6b7c79ad5390.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-25738a0381a15320c14c88880c0d5450.jpg?h=675&w=900",
+      "https://cdn.autotrack.nl/57759357/0-a059e2a2182c8afec78c5dea56067993.jpg?h=675&w=900",
+    ],
     car: {
       brand: "Volkswagen",
       model: "Polo",
