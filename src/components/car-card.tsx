@@ -24,7 +24,7 @@ import {
 } from "@/lib/format";
 
 export function CarCard({ car }: { car: Car }) {
-  const { ids, toggle, max } = useCompareSelection();
+  const { ids, setSelected, max } = useCompareSelection();
   const selected = ids.includes(car.id);
   const atMax = !selected && ids.length >= max;
   const photo = car.images[0];
@@ -73,7 +73,7 @@ export function CarCard({ car }: { car: Car }) {
             id={`compare-${car.id}`}
             checked={selected}
             disabled={atMax}
-            onCheckedChange={() => toggle(car.id)}
+            onCheckedChange={(value) => setSelected(car.id, value === true)}
           />
           <Label htmlFor={`compare-${car.id}`} className="font-normal">
             Compare
