@@ -1,7 +1,7 @@
 "use client";
 
 import { SlidersHorizontalIcon } from "lucide-react";
-import type { CarsQuery } from "@/lib/car-schema";
+import type { CarsQuery, RosterFacets } from "@/lib/car-schema";
 import { RosterFilters } from "@/components/roster-filters";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,13 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-export function RosterToolbar({ query }: { query: CarsQuery }) {
+export function RosterToolbar({
+  query,
+  facets,
+}: {
+  query: CarsQuery;
+  facets: RosterFacets;
+}) {
   return (
     <div className="grid gap-4">
       <div className="flex items-center justify-between gap-3 md:hidden">
@@ -33,14 +39,14 @@ export function RosterToolbar({ query }: { query: CarsQuery }) {
               </SheetDescription>
             </SheetHeader>
             <div className="px-4 pb-6">
-              <RosterFilters query={query} idPrefix="mobile-filter" />
+              <RosterFilters query={query} facets={facets} idPrefix="mobile-filter" />
             </div>
           </SheetContent>
         </Sheet>
       </div>
       <div className="hidden md:block">
         <h1 className="mb-4 text-2xl font-medium">Roster</h1>
-        <RosterFilters query={query} idPrefix="desktop-filter" />
+        <RosterFilters query={query} facets={facets} idPrefix="desktop-filter" />
       </div>
     </div>
   );

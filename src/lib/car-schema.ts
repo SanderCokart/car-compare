@@ -42,6 +42,13 @@ export type FuelType = z.infer<typeof fuelTypeSchema>;
 export type Transmission = z.infer<typeof transmissionSchema>;
 export type SortKey = z.infer<typeof sortKeySchema>;
 
+/** Distinct brand / fuel / transmission values present on the full roster. */
+export type RosterFacets = {
+  brands: string[];
+  fuels: FuelType[];
+  transmissions: Transmission[];
+};
+
 const nullableString = z.string().nullable();
 const nullablePositiveInt = z.number().int().positive().nullable();
 const nullableNonNegInt = z.number().int().nonnegative().nullable();
