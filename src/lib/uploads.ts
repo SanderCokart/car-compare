@@ -70,10 +70,10 @@ export function absoluteUploadPath(relativePath: string): string {
 }
 
 export function saveCarImageFile(carId: string, bytes: Uint8Array, ext: string): string {
-  const dir = path.join(UPLOADS_DIR, carId);
+  const dir = path.join(process.cwd(), "data", "uploads", carId);
   fs.mkdirSync(dir, { recursive: true });
   const filename = `${crypto.randomUUID()}.${ext}`;
-  const absolute = path.join(dir, filename);
+  const absolute = path.join(process.cwd(), "data", "uploads", carId, filename);
   assertInsideUploads(absolute);
   fs.writeFileSync(absolute, bytes);
   return `uploads/${carId}/${filename}`;
