@@ -26,6 +26,16 @@ function getSnapshot(): string {
   return sessionStorage.getItem(STORAGE_KEY) ?? "";
 }
 
+function readIds(): string[] {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? "");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === "string").slice(0, MAX_COMPARE);
+  } catch {
+    return [];
+  }
+}
+
 function getServerSnapshot(): string {
   return "";
 }
@@ -33,6 +43,7 @@ function getServerSnapshot(): string {
 type CompareSelection = {
   ids: string[];
   toggle: (id: string) => void;
+  setSelected: (id: string, selected: boolean) => void;
   clear: () => void;
   max: number;
 };
@@ -59,22 +70,37 @@ export function CompareSelectionProvider({ children }: { children: ReactNode }) 
 
   const toggle = useCallback(
     (id: string) => {
+      const current = readIds();
       persist(
-        ids.includes(id)
-          ? ids.filter((item) => item !== id)
-          : ids.length >= MAX_COMPARE
-            ? ids
-            : [...ids, id],
+        current.includes(id)
+          ? current.filter((item) => item !== id)
+          : current.length >= MAX_COMPARE
+            ? current
+            : [...current, id],
       );
     },
-    [ids, persist],
+    [persist],
+  );
+
+  const setSelected = useCallback(
+    (id: string, selected: boolean) => {
+      const current = readIds();
+      if (selected) {
+        if (current.includes(id) || current.length >= MAX_COMPARE) return;
+        persist([...current, id]);
+        return;
+      }
+      if (!current.includes(id)) return;
+      persist(current.filter((item) => item !== id));
+    },
+    [persist],
   );
 
   const clear = useCallback(() => persist([]), [persist]);
 
   const value = useMemo(
-    () => ({ ids, toggle, clear, max: MAX_COMPARE }),
-    [ids, toggle, clear],
+    () => ({ ids, toggle, setSelected, clear, max: MAX_COMPARE }),
+    [ids, toggle, setSelected, clear],
   );
 
   return (
