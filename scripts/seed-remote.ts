@@ -80,7 +80,8 @@ async function uploadPhotos(carId: string, files: { bytes: Uint8Array; mime: str
   }
   const form = new FormData();
   for (const file of files) {
-    form.append("files", new Blob([file.bytes], { type: file.mime }), file.name);
+    const bytes = new Uint8Array(file.bytes);
+    form.append("files", new Blob([bytes], { type: file.mime }), file.name);
   }
   const imgRes = await fetch(`${BASE}/api/cars/${carId}/images`, {
     method: "POST",

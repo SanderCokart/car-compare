@@ -15,7 +15,7 @@ export default async function Home({
   const origin = await resolveRequestOrigin();
   const [cars, facets] = await Promise.all([
     listCars(query, { origin }),
-    listCarFacets({ origin }),
+    listCarFacets(query, { origin }),
   ]);
 
   return <RosterView cars={cars} query={query} facets={facets} />;

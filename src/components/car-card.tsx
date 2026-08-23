@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCompareSelection } from "@/components/compare-selection";
-import { PriorityStrip } from "@/components/priority-strip";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -56,7 +55,6 @@ export function CarCard({ car }: { car: Car }) {
         </p>
       </CardHeader>
       <CardContent className="grid gap-3">
-        <PriorityStrip car={car} />
         {chips.length > 0 ? (
           <ul className="flex flex-wrap gap-1">
             {chips.map((chip) => (

@@ -1,14 +1,10 @@
 import {
   FEATURE_KEYS,
   carsQuerySchema,
-  fuelTypeSchema,
-  transmissionSchema,
   type CarsQuery,
   type FeatureKey,
-  type FuelType,
-  type RosterFacets,
-  type Transmission,
 } from "@/lib/car-schema";
+import { buildRosterFacets, type FilterableCar } from "@/lib/cars-filter";
 
 export const ROSTER_FEATURE_CHIPS: { label: string; key: FeatureKey }[] = [
   { label: "CarPlay", key: "appleCarPlay" },
@@ -23,13 +19,27 @@ function firstString(value: string | string[] | undefined): string | undefined {
   return value;
 }
 
+function parseFlag(value: string): boolean | undefined {
+  if (value === "true" || value === "1") return true;
+  if (value === "false" || value === "0") return undefined;
+  return true;
+}
+
 export function parseCarsQuery(
   searchParams: Record<string, string | string[] | undefined>,
 ): CarsQuery {
-  const raw: Record<string, string> = {};
+  const raw: Record<string, string | boolean> = {};
   for (const [key, value] of Object.entries(searchParams)) {
-    const text = firstString(value);
-    if (text != null && text !== "") raw[key] = text;
+    const text = firstString(value)?.trim();
+    if (text == null || text === "") continue;
+    raw[key] = text;
+  }
+  for (const key of FEATURE_KEYS) {
+    const value = raw[key];
+    if (typeof value !== "string") continue;
+    const flag = parseFlag(value);
+    if (flag === true) raw[key] = true;
+    else delete raw[key];
   }
   const parsed = carsQuerySchema.safeParse(raw);
   return parsed.success ? parsed.data : {};
@@ -37,13 +47,21 @@ export function parseCarsQuery(
 
 export function serializeCarsQuery(query: CarsQuery): URLSearchParams {
   const params = new URLSearchParams();
+  if (query.q) params.set("q", query.q);
   if (query.brand) params.set("brand", query.brand);
+  if (query.model) params.set("model", query.model);
   if (query.fuel) params.set("fuel", query.fuel);
   if (query.transmission) params.set("transmission", query.transmission);
+  if (query.minYear != null) params.set("minYear", String(query.minYear));
+  if (query.maxYear != null) params.set("maxYear", String(query.maxYear));
   if (query.minPriceCents != null) params.set("minPriceCents", String(query.minPriceCents));
   if (query.maxPriceCents != null) params.set("maxPriceCents", String(query.maxPriceCents));
   if (query.minOdometerKm != null) params.set("minOdometerKm", String(query.minOdometerKm));
   if (query.maxOdometerKm != null) params.set("maxOdometerKm", String(query.maxOdometerKm));
+  if (query.minHorsepower != null) params.set("minHorsepower", String(query.minHorsepower));
+  if (query.maxHorsepower != null) params.set("maxHorsepower", String(query.maxHorsepower));
+  if (query.minCylinders != null) params.set("minCylinders", String(query.minCylinders));
+  if (query.maxCylinders != null) params.set("maxCylinders", String(query.maxCylinders));
   if (query.sort) params.set("sort", query.sort);
   if (query.sortDir) params.set("sortDir", query.sortDir);
   for (const key of FEATURE_KEYS) {
@@ -57,42 +75,9 @@ export function carsHref(query: CarsQuery): string {
   return text ? `/?${text}` : "/";
 }
 
-function uniqueSortedBrands(brands: string[]): string[] {
-  const byLower = new Map<string, string>();
-  for (const brand of brands) {
-    const trimmed = brand.trim();
-    if (!trimmed) continue;
-    const key = trimmed.toLowerCase();
-    const existing = byLower.get(key);
-    if (!existing || trimmed.localeCompare(existing, "en") < 0) {
-      byLower.set(key, trimmed);
-    }
-  }
-  return [...byLower.values()].sort((a, b) => a.localeCompare(b, "en"));
-}
-
-function uniqueSorted<T extends string>(values: T[], label: (value: T) => string): T[] {
-  return [...new Set(values)].sort((a, b) => label(a).localeCompare(label(b), "en"));
-}
-
-/** Distinct filter options from the full roster (not the current filtered subset). */
-export function facetsFromCars(
-  cars: Array<{ brand: string; fuelType: string | null; transmission: string | null }>,
-): RosterFacets {
-  const fuels: FuelType[] = [];
-  const transmissions: Transmission[] = [];
-  for (const car of cars) {
-    const fuel = fuelTypeSchema.safeParse(car.fuelType);
-    if (fuel.success) fuels.push(fuel.data);
-    const transmission = transmissionSchema.safeParse(car.transmission);
-    if (transmission.success) transmissions.push(transmission.data);
-  }
-
-  return {
-    brands: uniqueSortedBrands(cars.map((car) => car.brand)),
-    fuels: uniqueSorted(fuels, (value) => value),
-    transmissions: uniqueSorted(transmissions, (value) => value),
-  };
+/** Distinct filter options and remainder counts from the full roster. */
+export function facetsFromCars(cars: FilterableCar[], query: CarsQuery = {}) {
+  return buildRosterFacets(cars, query);
 }
 
 export function parseCompareIds(raw: string | string[] | undefined): string[] {

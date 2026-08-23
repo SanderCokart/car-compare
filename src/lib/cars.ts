@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, lte, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, or, sql, type SQL, type SQLWrapper } from "drizzle-orm";
 import {
   carCreateSchema,
   carFieldsSchema,
@@ -11,7 +11,7 @@ import {
   type CarUpdate,
   type RosterFacets,
 } from "@/lib/car-schema";
-import { facetsFromCars } from "@/lib/cars-query";
+import { buildRosterFacets } from "@/lib/cars-filter";
 import { getDb } from "@/lib/db";
 import { carImages, cars, type CarImageRow, type CarRow } from "@/lib/db/schema";
 import { deleteCarUploadDir, unlinkUploadIfExists } from "@/lib/uploads";
@@ -51,18 +51,18 @@ export function parseCarUpdate(body: unknown) {
 }
 
 export function parseCarsQuery(searchParams: URLSearchParams) {
-  const raw: Record<string, string> = {};
+  const raw: Record<string, string | boolean> = {};
   for (const [key, value] of searchParams.entries()) {
-    if (value !== "") raw[key] = value;
+    const text = value.trim();
+    if (text !== "") raw[key] = text;
   }
-  const parsed: Record<string, string | boolean> = { ...raw };
   for (const key of FEATURE_KEYS) {
     const value = raw[key];
-    if (value == null) continue;
-    if (value === "true" || value === "1") parsed[key] = true;
-    else if (value === "false" || value === "0") parsed[key] = false;
+    if (typeof value !== "string") continue;
+    if (value === "true" || value === "1") raw[key] = true;
+    else delete raw[key];
   }
-  return carsQuerySchema.safeParse(parsed);
+  return carsQuerySchema.safeParse(raw);
 }
 
 function toCarRecord(row: CarRow, images: CarImageRow[]): CarRecord {
@@ -97,23 +97,52 @@ export async function getCarById(id: string): Promise<CarRecord | null> {
   return toCarRecord(row, await imagesForCar(id));
 }
 
+function escapeLike(value: string): string {
+  return value.replaceAll("\\", "\\\\").replaceAll("%", "\\%").replaceAll("_", "\\_");
+}
+
+function containsInsensitive(column: SQLWrapper, needle: string): SQL {
+  const pattern = `%${escapeLike(needle.toLowerCase())}%`;
+  return sql`lower(coalesce(${column}, '')) like ${pattern} escape '\\'`;
+}
+
 function listFilters(query: CarsQuery): SQL | undefined {
   const parts: SQL[] = [];
+
+  const keyword = query.q?.trim().toLowerCase();
+  if (keyword) {
+    const textMatch = or(
+      containsInsensitive(cars.brand, keyword),
+      containsInsensitive(cars.model, keyword),
+      containsInsensitive(cars.trim, keyword),
+      containsInsensitive(cars.licensePlate, keyword),
+      containsInsensitive(cars.sellerName, keyword),
+      containsInsensitive(cars.sellerCity, keyword),
+    );
+    if (textMatch) parts.push(textMatch);
+  }
 
   if (query.brand) {
     parts.push(sql`lower(${cars.brand}) = ${query.brand.toLowerCase()}`);
   }
+  if (query.model) {
+    parts.push(sql`lower(${cars.model}) = ${query.model.toLowerCase()}`);
+  }
   if (query.fuel) parts.push(eq(cars.fuelType, query.fuel));
   if (query.transmission) parts.push(eq(cars.transmission, query.transmission));
+  if (query.minYear != null) parts.push(gte(cars.year, query.minYear));
+  if (query.maxYear != null) parts.push(lte(cars.year, query.maxYear));
   if (query.minPriceCents != null) parts.push(gte(cars.priceCents, query.minPriceCents));
   if (query.maxPriceCents != null) parts.push(lte(cars.priceCents, query.maxPriceCents));
   if (query.minOdometerKm != null) parts.push(gte(cars.odometerKm, query.minOdometerKm));
   if (query.maxOdometerKm != null) parts.push(lte(cars.odometerKm, query.maxOdometerKm));
+  if (query.minHorsepower != null) parts.push(gte(cars.horsepower, query.minHorsepower));
+  if (query.maxHorsepower != null) parts.push(lte(cars.horsepower, query.maxHorsepower));
+  if (query.minCylinders != null) parts.push(gte(cars.cylinders, query.minCylinders));
+  if (query.maxCylinders != null) parts.push(lte(cars.cylinders, query.maxCylinders));
 
   for (const key of FEATURE_KEYS) {
-    const value = query[key];
-    if (value == null) continue;
-    parts.push(eq(cars[key], value));
+    if (query[key] === true) parts.push(eq(cars[key], true));
   }
 
   return parts.length ? and(...parts) : undefined;
@@ -149,17 +178,11 @@ export async function listCars(query: CarsQuery): Promise<CarRecord[]> {
   return rows.map((row) => toCarRecord(row, imagesByCar.get(row.id) ?? []));
 }
 
-/** Distinct brand / fuel / transmission values from every car, ignoring active filters. */
-export async function listCarFacets(): Promise<RosterFacets> {
+/** Options and remainder counts from every car; counts respect `query`. */
+export async function listCarFacets(query: CarsQuery = {}): Promise<RosterFacets> {
   const db = getDb();
-  const rows = await db
-    .select({
-      brand: cars.brand,
-      fuelType: cars.fuelType,
-      transmission: cars.transmission,
-    })
-    .from(cars);
-  return facetsFromCars(rows);
+  const rows = await db.select().from(cars);
+  return buildRosterFacets(rows, query);
 }
 
 export async function createCar(input: CarCreate): Promise<CarRecord> {
