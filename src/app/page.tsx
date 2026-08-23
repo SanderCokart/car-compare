@@ -3,6 +3,8 @@ import { listCars } from "@/lib/cars-client";
 import { parseCarsQuery } from "@/lib/cars-query";
 import { resolveRequestOrigin } from "@/lib/request-origin";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home({
   searchParams,
 }: {

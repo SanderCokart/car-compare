@@ -11,6 +11,8 @@ import { carTitle, formatOdometerKm, formatPriceCents, MISSING } from "@/lib/for
 import { resolveRequestOrigin } from "@/lib/request-origin";
 import { cn } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function CarDetailPage({
   params,
 }: {

@@ -13,6 +13,8 @@ import { carTitle, formatSpecValue, specLabel } from "@/lib/format";
 import { resolveRequestOrigin } from "@/lib/request-origin";
 import { cn } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 const GROUP_LABELS: Record<SpecGroup, string> = {
   basics: "Basics",
   drivetrain: "Drivetrain",
