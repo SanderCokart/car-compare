@@ -1,6 +1,30 @@
 /**
  * Six live occasion listings (fetched 2026-08-23).
- * Unknown specs stay null. Trunk figures only when the ad cites them.
+ *
+ * Listing text wins for this car's options. Model-typical specs below were
+ * filled only from cited sources (max 3 lookups per gap, then left null).
+ * Not filled from generic pages: APK, plate, odometer, price, seller.
+ *
+ * Trunk / tank sources:
+ * - Polo AW 1.0 MPI Trendline: Autoweek testdata
+ *   https://www.autoweek.nl/auto/92193/volkswagen-polo-1-0-65pk-trendline/
+ *   tank 40 L, trunk 351 L; folded 1125 L from Auto-Wiki Polo AW Trendline
+ *   https://www.auto-wiki.org/vw/polo/aw/polo-1-0-mpi-trendline-59-kw-93452/
+ * - Polo 1.0 TSI 95 Comfortline Business (2018–2021): Autoweek
+ *   https://www.autoweek.nl/auto/93590/volkswagen-polo-1-0-tsi-95pk-comfortline-business/
+ *   175 Nm, tank 40 L, trunk 351 L, extra-urban 3.8 L/100 km
+ * - Polo 1.0 TSI 95 Life: Autoweek
+ *   https://www.autoweek.nl/auto/103978/volkswagen-polo-1-0-tsi-95pk-life/
+ *   175 Nm, tank 40 L; VW still quotes 351/1125 L for this generation
+ *   (Autoweek Life testdata lists 355 L seats-up — not used; factory 351)
+ * - Polo trunk width/height mm: Autoweek n.b.; no brochure mm after 3 tries
+ * - Sandero TCe 90 Comfort: Autoweek
+ *   https://www.autoweek.nl/auto/102317/dacia-sandero-tce-90-comfort/
+ *   160 Nm, tank 50 L, trunk 328 L VDA; extra-urban 4.3 / combined 5.0
+ * - Sandero folded 1108 L VDA + inner width 1026 mm:
+ *   https://www.dacia.nl/modellen/sandero/afmetingen.html
+ *   Dacia dimensions sheet (boot entry 1021 mm, between arches 1026 mm)
+ * - Sandero trunk height mm: not published (sill-to-ground is not height)
  */
 import { FEATURE_KEYS, type CarCreate, type FeatureKey } from "../src/lib/car-schema";
 
@@ -23,11 +47,20 @@ function features(
   return out;
 }
 
-const unset = {
+/** Polo VI (AW), factory VDA. Width/height unpublished. */
+const poloAwTrunk = {
   trunkWidthMm: null,
   trunkHeightMm: null,
-  trunkLitersSeatsUp: null,
-  trunkLitersSeatsFolded: null,
+  trunkLitersSeatsUp: 351,
+  trunkLitersSeatsFolded: 1125,
+} as const;
+
+/** Sandero III petrol hatch (not Stepway). Height unpublished. */
+const sanderoTrunk = {
+  trunkWidthMm: 1026,
+  trunkHeightMm: null,
+  trunkLitersSeatsUp: 328,
+  trunkLitersSeatsFolded: 1108,
 } as const;
 
 export const seedListings: SeedListing[] = [
@@ -68,12 +101,13 @@ export const seedListings: SeedListing[] = [
       sellerName: "Korteland Auto's",
       sellerCity: "Rijswijk",
       sellerAddress: "Oranjelaan 42, Rijswijk",
-      ...unset,
-      fuelTankLiters: null,
+      ...poloAwTrunk,
+      fuelTankLiters: 40,
       ...features({
         appleCarPlay: true,
         androidAuto: true,
         radarEmergencyBraking: true,
+        hillHold: true,
         cruiseControl: true,
       }),
       highwayLPer100km: 4.1,
@@ -103,17 +137,14 @@ export const seedListings: SeedListing[] = [
       transmission: "manual",
       gears: 5,
       horsepower: 97,
-      torqueNm: null,
+      torqueNm: 175,
       cylinders: 3,
       licensePlate: "K-605-XX",
       apkValidUntil: "2027-08-04",
       sellerName: "Auto-Ypenburg B.V.",
       sellerCity: "'s-Gravenhage",
       sellerAddress: "Mercuriusweg 20, 2516 AW 's-Gravenhage",
-      trunkWidthMm: null,
-      trunkHeightMm: null,
-      trunkLitersSeatsUp: 351,
-      trunkLitersSeatsFolded: 1125,
+      ...poloAwTrunk,
       fuelTankLiters: 40,
       ...features({
         parkingSensorsFront: true,
@@ -121,9 +152,10 @@ export const seedListings: SeedListing[] = [
         radarEmergencyBraking: true,
         upgradedRims: true,
         adaptiveCruise: true,
+        hillHold: true,
         cruiseControl: true,
       }),
-      highwayLPer100km: null,
+      highwayLPer100km: 3.8,
       combinedLPer100km: 100 / 18.5,
     },
   },
@@ -157,7 +189,7 @@ export const seedListings: SeedListing[] = [
       sellerName: "Motorhuis Den Haag Binckhorstlaan",
       sellerCity: "Den Haag",
       sellerAddress: "Binckhorstlaan 125, 2516 BA Den Haag",
-      ...unset,
+      ...poloAwTrunk,
       fuelTankLiters: 40,
       ...features({
         parkingSensorsFront: true,
@@ -168,9 +200,10 @@ export const seedListings: SeedListing[] = [
         radarEmergencyBraking: true,
         upgradedRims: true,
         adaptiveCruise: true,
+        hillHold: true,
         cruiseControl: true,
       }),
-      highwayLPer100km: null,
+      highwayLPer100km: 3.8,
       combinedLPer100km: 5.4,
     },
   },
@@ -197,17 +230,18 @@ export const seedListings: SeedListing[] = [
       transmission: "manual",
       gears: 5,
       horsepower: 95,
-      torqueNm: null,
+      torqueNm: 175,
       cylinders: 3,
       licensePlate: "P-529-SR",
       apkValidUntil: "2028-04-08",
       sellerName: "Neologistics",
       sellerCity: "'s-Gravenhage",
       sellerAddress: "Groenewegje 154, 2515 NC 's-Gravenhage",
-      ...unset,
-      fuelTankLiters: null,
+      ...poloAwTrunk,
+      fuelTankLiters: 40,
       ...features({
         blindSpotMonitor: true,
+        androidAuto: true,
         appleCarPlay: true,
         radarEmergencyBraking: true,
         upgradedRims: true,
@@ -252,7 +286,7 @@ export const seedListings: SeedListing[] = [
       sellerName: "Stam Amersfoort",
       sellerCity: "Amersfoort",
       sellerAddress: "Gemini 1, 3824 MH Amersfoort",
-      ...unset,
+      ...sanderoTrunk,
       fuelTankLiters: 50,
       ...features({
         blindSpotMonitor: true,
@@ -299,17 +333,18 @@ export const seedListings: SeedListing[] = [
       sellerName: "De Automakelaar Harderwijk B.V.",
       sellerCity: "Harderwijk",
       sellerAddress: "Edisonstraat 9, 3846 AS Harderwijk",
-      ...unset,
+      ...sanderoTrunk,
       fuelTankLiters: 50,
       ...features({
         blindSpotMonitor: true,
+        appleCarPlay: true,
         rearviewCamera: true,
         radarEmergencyBraking: true,
         hillHold: true,
         cruiseControl: true,
       }),
-      highwayLPer100km: null,
-      combinedLPer100km: null,
+      highwayLPer100km: 4.3,
+      combinedLPer100km: 5.0,
     },
   },
 ];
