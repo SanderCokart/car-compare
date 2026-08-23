@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.gitignore
+data
+*.md
+Dockerfile
+.dockerignore
+npm-debug.log*
+drizzle
