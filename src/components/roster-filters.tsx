@@ -79,11 +79,12 @@ export function RosterFilters({
   const brands = withCurrentBrand(facets.brands, query.brand);
   const fuels = withCurrent(facets.fuels, query.fuel);
   const transmissions = withCurrent(facets.transmissions, query.transmission);
+  const selectedBrand = query.brand;
   const brandValue =
-    query.brand == null
+    selectedBrand == null
       ? "all"
-      : (brands.find((brand) => brand.toLowerCase() === query.brand.toLowerCase()) ??
-        query.brand);
+      : (brands.find((brand) => brand.toLowerCase() === selectedBrand.toLowerCase()) ??
+        selectedBrand);
 
   return (
     <div className="grid gap-4">
