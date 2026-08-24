@@ -53,7 +53,9 @@ export function PrioritySpecDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline">What is most important to you?</Button>
+        <Button variant="outline" className="font-mono text-xs tracking-wide uppercase">
+          Priorities
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>

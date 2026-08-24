@@ -61,6 +61,10 @@ Use either the **Dockerfile** in this repo or Nixpacks. The app listens on `PORT
 
 Mount a persistent volume at `/app/data` (SQLite + uploads). No extra services are required.
 
+### Preview deployments
+
+The production app (`cc.sandercokart.com`) has GitHub preview deployments enabled in Dokploy. Opening a pull request **against `main`** (the provider branch) spins up an isolated preview on port `3000`, comments the URL on the PR, and tears it down when the PR closes. At most five previews run at once; only repository collaborators can trigger them. Production auto-deploys stay on `main` only.
+
 Local parity:
 
 ```bash

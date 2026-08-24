@@ -20,8 +20,10 @@ export function PriorityStrip({ car }: { car: Car }) {
 function PriorityChip({ specKey, car }: { specKey: SpecKey; car: Car }) {
   return (
     <li>
-      <Badge variant="secondary" className="h-auto max-w-full px-2 py-1 font-normal">
-        <span className="text-muted-foreground">{specLabel(specKey)}</span>
+      <Badge variant="secondary" className="h-auto max-w-full rounded-sm px-2 py-1 font-normal">
+        <span className="font-mono text-[0.65rem] tracking-wide text-muted-foreground uppercase">
+          {specLabel(specKey)}
+        </span>
         <span className="truncate font-medium">{formatSpecValue(car, specKey)}</span>
       </Badge>
     </li>

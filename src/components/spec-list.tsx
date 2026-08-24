@@ -21,7 +21,9 @@ export function SpecList({ car }: { car: Car }) {
         const items = SPEC_KEYS.filter((item) => item.group === group);
         return (
           <section key={group} className="grid gap-2">
-            <h2 className="text-sm font-medium">{GROUP_LABELS[group]}</h2>
+            <h2 className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
+              {GROUP_LABELS[group]}
+            </h2>
             <dl className="grid gap-2 sm:grid-cols-2">
               {items.map((item) => (
                 <div key={item.key} className="flex items-baseline justify-between gap-3 border-b py-1.5">

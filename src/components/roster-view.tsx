@@ -13,12 +13,12 @@ export function RosterView({
   facets: RosterFacets;
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 pb-24">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 pb-28">
       <RosterToolbar query={query} facets={facets} />
       {cars.length === 0 ? (
         <p className="text-muted-foreground">No cars match these filters.</p>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {cars.map((car) => (
             <li key={car.id}>
               <CarCard car={car} />

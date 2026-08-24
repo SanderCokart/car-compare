@@ -21,12 +21,17 @@ export function RosterToolbar({
   facets: RosterFacets;
 }) {
   return (
-    <div className="grid gap-4">
-      <div className="flex items-center justify-between gap-3 md:hidden">
-        <h1 className="text-xl font-medium">Roster</h1>
+    <div className="grid gap-5">
+      <div className="flex items-end justify-between gap-3 border-b border-foreground/15 pb-4">
+        <div className="grid gap-1">
+          <p className="font-mono text-[0.65rem] tracking-[0.22em] text-muted-foreground uppercase">
+            Listing board
+          </p>
+          <h1 className="font-heading text-4xl font-medium tracking-tight italic">Roster</h1>
+        </div>
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="md:hidden">
               <SlidersHorizontalIcon />
               Filters
             </Button>
@@ -44,8 +49,7 @@ export function RosterToolbar({
           </SheetContent>
         </Sheet>
       </div>
-      <div className="hidden md:block">
-        <h1 className="mb-4 text-2xl font-medium">Roster</h1>
+      <div className="hidden border border-foreground/12 bg-card p-4 md:block">
         <RosterFilters query={query} facets={facets} idPrefix="desktop-filter" />
       </div>
     </div>

@@ -11,7 +11,7 @@ export function CarGallery({ car }: { car: Car }) {
 
   if (photos.length === 0) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-xl bg-muted text-sm text-muted-foreground">
+      <div className="flex aspect-[4/3] items-center justify-center border border-foreground/12 bg-muted font-mono text-xs tracking-wider text-muted-foreground uppercase">
         No photo
       </div>
     );
@@ -19,7 +19,7 @@ export function CarGallery({ car }: { car: Car }) {
 
   return (
     <div className="grid gap-2">
-      <div className="overflow-hidden rounded-xl bg-muted">
+      <div className="overflow-hidden border border-foreground/12 bg-muted">
         {/* eslint-disable-next-line @next/next/no-img-element -- listing photos are volume paths */}
         <img
           src={imageSrc(current.path)}
@@ -35,8 +35,8 @@ export function CarGallery({ car }: { car: Car }) {
                 type="button"
                 className={
                   photoIndex === index
-                    ? "overflow-hidden rounded-md ring-2 ring-ring"
-                    : "overflow-hidden rounded-md"
+                    ? "overflow-hidden border border-foreground/20 ring-2 ring-ring"
+                    : "overflow-hidden border border-foreground/12"
                 }
                 onClick={() => setIndex(photoIndex)}
               >
