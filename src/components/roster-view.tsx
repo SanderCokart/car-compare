@@ -14,7 +14,7 @@ export function RosterView({
 }) {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 pb-28">
-      <RosterToolbar query={query} facets={facets} />
+      <RosterToolbar query={query} facets={facets} matchCount={cars.length} />
       {cars.length === 0 ? (
         <p className="text-muted-foreground">No cars match these filters.</p>
       ) : (

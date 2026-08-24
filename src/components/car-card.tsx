@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useCompareSelection } from "@/components/compare-selection";
-import { PriorityStrip } from "@/components/priority-strip";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -51,7 +50,6 @@ export function CarCard({ car }: { car: Car }) {
             {car.odometerKm == null ? MISSING : formatOdometerKm(car.odometerKm)}
           </p>
         </div>
-        <PriorityStrip car={car} />
         {chips.length > 0 ? (
           <ul className="flex flex-wrap gap-1">
             {chips.map((chip) => (

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { carRecordSchema, type Car, type CarsQuery, type RosterFacets } from "@/lib/car-schema";
-import { facetsFromCars, serializeCarsQuery } from "@/lib/cars-query";
+import { buildRosterFacets } from "@/lib/cars-filter";
+import { serializeCarsQuery } from "@/lib/cars-query";
 import { MOCK_CARS, filterAndSortCars } from "@/lib/cars-mock";
 
 const carsListSchema = z.union([
@@ -67,12 +68,15 @@ export async function listCars(
   }
 }
 
-/** Distinct filter options from the unfiltered roster. */
-export async function listCarFacets(options: ListCarsOptions = {}): Promise<RosterFacets> {
+/** Filter options and remainder counts from the full roster. */
+export async function listCarFacets(
+  query: CarsQuery = {},
+  options: ListCarsOptions = {},
+): Promise<RosterFacets> {
   if (isServer()) {
     try {
       const { listCarFacets: listCarFacetsFromDb } = await import("@/lib/cars");
-      return listCarFacetsFromDb();
+      return listCarFacetsFromDb(query);
     } catch {
       // Fall through to HTTP, then mock.
     }
@@ -81,9 +85,9 @@ export async function listCarFacets(options: ListCarsOptions = {}): Promise<Rost
   try {
     const { status, json } = await fetchJson(carsUrl("/api/cars", options.origin));
     if (!status || status >= 400) throw new Error(`HTTP ${status}`);
-    return facetsFromCars(parseCarsPayload(json));
+    return buildRosterFacets(parseCarsPayload(json), query);
   } catch {
-    return facetsFromCars(MOCK_CARS);
+    return buildRosterFacets(MOCK_CARS, query);
   }
 }
 

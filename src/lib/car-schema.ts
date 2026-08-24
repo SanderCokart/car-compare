@@ -42,11 +42,32 @@ export type FuelType = z.infer<typeof fuelTypeSchema>;
 export type Transmission = z.infer<typeof transmissionSchema>;
 export type SortKey = z.infer<typeof sortKeySchema>;
 
-/** Distinct brand / fuel / transmission values present on the full roster. */
+export type FacetOption<T extends string = string> = {
+  value: T;
+  count: number;
+};
+
+export type RosterFacetBounds = {
+  yearMin: number;
+  yearMax: number;
+  priceCentsMin: number;
+  priceCentsMax: number;
+  odometerKmMin: number;
+  odometerKmMax: number;
+  horsepowerMin: number;
+  horsepowerMax: number;
+  cylindersMin: number;
+  cylindersMax: number;
+};
+
+/** Distinct options, per-option remainder counts, and slider bounds. */
 export type RosterFacets = {
-  brands: string[];
-  fuels: FuelType[];
-  transmissions: Transmission[];
+  brands: FacetOption[];
+  models: FacetOption[];
+  fuels: FacetOption<FuelType>[];
+  transmissions: FacetOption<Transmission>[];
+  features: Record<FeatureKey, number>;
+  bounds: RosterFacetBounds;
 };
 
 const nullableString = z.string().nullable();
@@ -170,13 +191,21 @@ const optionalFlag = z.coerce.boolean().optional();
 
 /** GET /api/cars query string (after URLSearchParams parsing). */
 export const carsQuerySchema = z.object({
+  q: z.string().trim().min(1).optional(),
   brand: z.string().min(1).optional(),
+  model: z.string().min(1).optional(),
   fuel: fuelTypeSchema.optional(),
   transmission: transmissionSchema.optional(),
+  minYear: z.coerce.number().int().positive().optional(),
+  maxYear: z.coerce.number().int().positive().optional(),
   minPriceCents: z.coerce.number().int().nonnegative().optional(),
   maxPriceCents: z.coerce.number().int().nonnegative().optional(),
   minOdometerKm: z.coerce.number().int().nonnegative().optional(),
   maxOdometerKm: z.coerce.number().int().nonnegative().optional(),
+  minHorsepower: z.coerce.number().int().nonnegative().optional(),
+  maxHorsepower: z.coerce.number().int().nonnegative().optional(),
+  minCylinders: z.coerce.number().int().positive().optional(),
+  maxCylinders: z.coerce.number().int().positive().optional(),
   sort: sortKeySchema.optional(),
   sortDir: z.enum(["asc", "desc"]).optional(),
   blindSpotMonitor: optionalFlag,
@@ -257,6 +286,19 @@ export const SPEC_KEYS = [
 }>;
 
 export type SpecKey = (typeof SPEC_KEYS)[number]["key"];
+
+export const FEATURE_FILTER_GROUPS = [
+  {
+    group: "safety",
+    label: "Safety",
+    keys: SPEC_KEYS.filter((spec) => spec.group === "safety"),
+  },
+  {
+    group: "comfort",
+    label: "Comfort",
+    keys: SPEC_KEYS.filter((spec) => spec.group === "comfort"),
+  },
+] as const;
 
 export const SPEC_KEY_VALUES = SPEC_KEYS.map((s) => s.key) as [
   SpecKey,

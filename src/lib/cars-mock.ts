@@ -5,6 +5,7 @@ import {
   type CarsQuery,
   type FeatureKey,
 } from "@/lib/car-schema";
+import { filterCars } from "@/lib/cars-filter";
 
 const stamp = "2026-01-15T12:00:00.000Z";
 
@@ -244,25 +245,7 @@ function sortValue(car: Car, sort: NonNullable<CarsQuery["sort"]>): number | nul
 }
 
 export function filterAndSortCars(cars: Car[], query: CarsQuery): Car[] {
-  const filtered = cars.filter((car) => {
-    if (query.brand && !car.brand.toLowerCase().includes(query.brand.toLowerCase())) {
-      return false;
-    }
-    if (query.fuel && car.fuelType !== query.fuel) return false;
-    if (query.transmission && car.transmission !== query.transmission) return false;
-    if (query.minPriceCents != null && car.priceCents < query.minPriceCents) return false;
-    if (query.maxPriceCents != null && car.priceCents > query.maxPriceCents) return false;
-    if (query.minOdometerKm != null) {
-      if (car.odometerKm == null || car.odometerKm < query.minOdometerKm) return false;
-    }
-    if (query.maxOdometerKm != null) {
-      if (car.odometerKm == null || car.odometerKm > query.maxOdometerKm) return false;
-    }
-    for (const key of FEATURE_KEYS) {
-      if (query[key] === true && car[key] !== true) return false;
-    }
-    return true;
-  });
+  const filtered = filterCars(cars, query);
 
   const sort = query.sort ?? "price";
   const dir = query.sortDir ?? "asc";
