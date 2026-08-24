@@ -63,7 +63,7 @@ Mount a persistent volume at `/app/data` (SQLite + uploads). No extra services a
 
 ### Preview deployments
 
-The production app (`cc.sandercokart.com`) has GitHub preview deployments enabled in Dokploy. Opening a pull request **against `main`** (the provider branch) spins up an isolated preview on port `3000`, comments the URL on the PR, and tears it down when the PR closes. At most five previews run at once; only repository collaborators can trigger them. Production auto-deploys stay on `main` only.
+The production app (`cc.sandercokart.com`) has GitHub preview deployments enabled in Dokploy, using the same wildcard as Sander's Codehouse staging: `*.sandercokart.com` with HTTPS via the `cloudflare-dns` Traefik resolver. Opening a pull request **against `main`** (the provider branch) spins up an isolated preview on port `3000` at a host like `preview-<app>-<id>.sandercokart.com`, comments the URL on the PR, and tears it down when the PR closes. At most five previews run at once; only repository collaborators can trigger them. Production auto-deploys stay on `main` only.
 
 Local parity:
 
