@@ -15,7 +15,9 @@ export function DealerMap({
   return (
     <section className="grid gap-3">
       <div>
-        <h2 className="text-sm font-medium">Dealer</h2>
+        <h2 className="font-mono text-xs tracking-[0.18em] text-muted-foreground uppercase">
+          Dealer
+        </h2>
         <p className="text-muted-foreground">{heading}</p>
         <p className="text-sm">{address ?? MISSING}</p>
       </div>
@@ -23,7 +25,7 @@ export function DealerMap({
         <iframe
           title="Dealer map"
           src={googleMapsEmbedUrl(address)}
-          className="h-64 w-full rounded-xl border"
+          className="h-64 w-full border border-foreground/12"
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
         />
